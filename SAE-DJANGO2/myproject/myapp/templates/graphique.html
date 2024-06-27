@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Graphique des Données</title>
+    <style>
+        .container {
+            width: 80%;
+            margin: auto;
+            text-align: center;
+        }
+        .graph {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Graphique des Données</h1>
+        <div class="graph">
+            {{ graph|safe }}
+        </div>
+        <a href="{% url 'index' %}" class="button">Retour à la liste</a>
+    </div>
+</body>
+</html>

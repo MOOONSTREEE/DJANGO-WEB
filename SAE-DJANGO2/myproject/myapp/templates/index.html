@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+    {% load static %}
+    {% load l10n %}
+    <title>Affichage des données</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'css/styles.css' %}">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>Liste des Capteurs</h1>
+        <form method="get" action="{% url 'index' %}">
+            <label for="capteur_id">ID du Capteur:</label>
+            <select id="capteur_id" name="capteur_id">
+                <option value="">Tous les capteurs</option>
+                {% for capteur in capteurs %}
+                    <option value="{{ capteur.id }}" {% if capteur.id|stringformat:"s" == selected_capteur_id %}selected{% endif %}>{{ capteur.nom_capteur }}</option>
+                {% endfor %}
+            </select>
+
+            <label for="date_start">Date de début:</label>
+            <input type="date" id="date_start" name="date_start">
+
+            <label for="date_end">Date de fin:</label>
+            <input type="date" id="date_end" name="date_end">
+
+            <button type="submit">Filtrer</button>
+        </form>
+
+        <h1>Liste des Données</h1>
+        <ul>
+        {% for donnee in donnees %}
+            <li>
+                <span>Capteur:</span> 
+                <form method="post" action="{% url 'edit_capteur_ajax' donnee.capteur.id %}" class="inline-form">
+                    {% csrf_token %}
+                    <input type="text" name="nom_capteur" value="{{ donnee.capteur.nom_capteur }}">
+                    <button type="submit" class="button edit-button">Modifier</button>
+                </form>
+                <span>Valeur:</span> <span class="value">{{ donnee.valeur|floatformat:2 }}</span> 
+                <span>Date:</span> <span class="value">{{ donnee.timestamp|localize }}</span>
+                <a href="{% url 'delete_donnee' donnee.donneeid %}" class="button delete-button">Supprimer</a>
+            </li>
+        {% endfor %}
+        </ul>
+
+        <h1>Ajouter une nouvelle donnée</h1>
+        <form method="post" action="{% url 'add_donnee' %}">
+            {% csrf_token %}
+            <label for="capteur">Capteur:</label>
+            <input type="text" id="capteur" name="capteur" required>
+
+            <label for="valeur">Valeur:</label>
+            <input type="number" step="0.01" id="valeur" name="valeur" required>
+
+            <button type="submit">Ajouter</button>
+        </form>
+
+        <h1>Actions</h1>
+        <a href="{% url 'graphique' %}" class="button">Afficher le graphique</a>
+        <a href="{% url 'export_csv' %}" class="button">Télécharger les données en CSV</a>
+    </div>
+
+    <script>
+        setTimeout(function(){
+            window.location.reload(1);
+        }, 30000);
+
+        // Ajout de la gestion du formulaire Ajax
+        $(document).ready(function() {
+            $('.inline-form').on('submit', function(event) {
+                event.preventDefault();
+                var $form = $(this);
+                $.ajax({
+                    type: $form.attr('method'),
+                    url: $form.attr('action'),
+                    data: $form.serialize(),
+                    success: function(response) {
+                        if (response.success) {
+                            alert('Capteur mis à jour avec succès.');
+                        } else {
+                            alert('Échec de la mise à jour du capteur.');
+                        }
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
